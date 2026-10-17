@@ -1,0 +1,18 @@
+Experiment: pre-size book C's OrderTable instead of growing it
+(changed `initial_capacity = 1 << 16` to `1 << 21` in array_book.hpp, rebuilt, same machine, not committed)
+
+C normal (starts at 2^16 slots, doubles at load 0.5, ends at 2^20 = 16 MB):
+  total time      30.88 ms
+  ns / add         56.1  (raw 74.2)
+  ns / cancel      35.8  (raw 53.9)
+
+C pre-sized (2^21 slots = 32 MB from the start):
+  total time      49.77 ms
+  ns / add        109.6  (raw 127.5)
+  ns / cancel      89.5  (raw 107.4)
+  perf stat:  1169.28 msec task-clock, 100955 page-faults   (normal C: ~25150 page-faults)
+
+Page faults per invocation of ./bench --impl X (perf stat -e page-faults):
+  A  --runs 1: 19610   --runs 5: 19609
+  B  --runs 1: 18789   --runs 5: 18785
+  C  --runs 1: 25150   --runs 5: 25154

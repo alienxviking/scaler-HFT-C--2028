@@ -1,0 +1,9 @@
+per run (1M ops)                      A              B              C
+cycles                        733069105      845874836      155376064
+instructions                  543203432      784339126      203653481
+branches                      119696980      174691535       32892647
+branch-misses                   7874454        4691728        1078872
+cache-misses                    5086201        8012424        1123863
+L1-dcache-load-misses          17563701       28457551        3600854
+dTLB-load-misses                 496046        1023631         490250
+page-faults                          -0              0              0

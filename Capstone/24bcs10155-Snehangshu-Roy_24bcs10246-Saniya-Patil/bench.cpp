@@ -3,7 +3,7 @@
 //   ./bench --verify              run edge case tests + random workload on A, B, C
 //   ./bench --impl A|B|C          benchmark one implementation (5 runs, median)
 //
-// extra flags: --runs N, --ops N, --seed S
+// extra flags: --runs N, --ops N, --seed S, --no-timers (only total time)
 
 #include <algorithm>
 #include <chrono>
@@ -143,6 +143,11 @@ double timer_overhead_ns() {
 // and checksum. Pass 2 runs it again on a fresh book and wraps every
 // add/cancel/bbo call in steady_clock::now() -> per-op averages.
 // (doing both in one pass would make the total time mostly clock calls)
+//
+// --no-timers skips pass 2. We added it after perf record showed
+// clock_gettime at ~37% of C's samples, which was messing up the counters.
+bool g_op_timers = true;
+
 template <class Book>
 RunResult run_once(const std::vector<Op>& ops) {
     RunResult r;
@@ -168,6 +173,7 @@ RunResult run_once(const std::vector<Op>& ops) {
         r.total_ms = std::chrono::duration<double, std::milli>(end - start).count();
         r.checksum = cs;
     }
+    if (!g_op_timers) return r;
 
     {
         auto book = std::make_unique<Book>();
@@ -232,8 +238,11 @@ int run_bench(const char* name, size_t n_ops, uint32_t seed, int runs) {
     uint64_t checksum = 0;
     for (int k = 0; k < runs; k++) {
         RunResult r = run_once<Book>(ops);
-        std::printf("run %d: total %8.2f ms | raw add %6.1f ns | cancel %6.1f ns | bbo %5.1f ns\n", k + 1,
-                    r.total_ms, r.add_ns, r.cancel_ns, r.bbo_ns);
+        if (g_op_timers)
+            std::printf("run %d: total %8.2f ms | raw add %6.1f ns | cancel %6.1f ns | bbo %5.1f ns\n", k + 1,
+                        r.total_ms, r.add_ns, r.cancel_ns, r.bbo_ns);
+        else
+            std::printf("run %d: total %8.2f ms\n", k + 1, r.total_ms);
         total.push_back(r.total_ms);
         add.push_back(r.add_ns);
         cancel.push_back(r.cancel_ns);
@@ -252,9 +261,11 @@ int run_bench(const char* name, size_t n_ops, uint32_t seed, int runs) {
     auto line = [&](const char* what, double raw) {
         std::printf("  ns / %-7s %8.1f  (raw %.1f)\n", what, std::max(0.0, raw - overhead), raw);
     };
-    line("add", median(add));
-    line("cancel", median(cancel));
-    line("bbo", median(bbo));
+    if (g_op_timers) {
+        line("add", median(add));
+        line("cancel", median(cancel));
+        line("bbo", median(bbo));
+    }
 
     // replay once more to print the final state of the book
     auto book = std::make_unique<Book>();
@@ -520,7 +531,7 @@ int run_verify(size_t n_ops, uint32_t seed) {
 // ---------------------------------------------------------------- main
 
 void usage() {
-    std::printf("usage: ./bench --impl A|B|C [--runs N] [--ops N] [--seed S]\n");
+    std::printf("usage: ./bench --impl A|B|C [--runs N] [--ops N] [--seed S] [--no-timers]\n");
     std::printf("       ./bench --verify [--ops N] [--seed S]\n");
 }
 
@@ -535,6 +546,7 @@ int main(int argc, char** argv) {
     for (int i = 1; i < argc; i++) {
         std::string a = argv[i];
         if (a == "--verify") verify = true;
+        else if (a == "--no-timers") g_op_timers = false;
         else if (a == "--impl" && i + 1 < argc) impl = argv[++i];
         else if (a == "--runs" && i + 1 < argc) runs = std::atoi(argv[++i]);
         else if (a == "--ops" && i + 1 < argc) ops = std::strtoull(argv[++i], nullptr, 10);

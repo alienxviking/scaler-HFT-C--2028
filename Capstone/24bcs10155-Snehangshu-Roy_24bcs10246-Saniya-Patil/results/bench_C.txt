@@ -1,0 +1,22 @@
+Implementation C (flat array + bitmap + own hash table)
+ops: 1000000 (add 700471, cancel 199303, bbo 100226), seed 42, runs 5
+steady_clock::now() overhead: 17.9 ns
+
+run 1: total    38.97 ms | raw add   79.5 ns | cancel   44.7 ns | bbo  18.0 ns
+run 2: total    28.49 ms | raw add   61.8 ns | cancel   45.7 ns | bbo  17.7 ns
+run 3: total    30.88 ms | raw add   66.0 ns | cancel   47.0 ns | bbo  20.7 ns
+run 4: total    31.14 ms | raw add   57.6 ns | cancel   41.9 ns | bbo  17.7 ns
+run 5: total    26.02 ms | raw add   57.0 ns | cancel   42.1 ns | bbo  17.9 ns
+
+median of 5 runs:
+  total time      30.88 ms  (30.9 ns per op, untimed loop)
+  ns / add         43.9  (raw 61.8)
+  ns / cancel      26.8  (raw 44.7)
+  ns / bbo          0.1  (raw 17.9)
+
+Final BBO:
+Bid: 99.99 x 1981
+Ask: 100.01 x 2573
+Live orders: 501168
+
+Checksum: 13740035995088966065

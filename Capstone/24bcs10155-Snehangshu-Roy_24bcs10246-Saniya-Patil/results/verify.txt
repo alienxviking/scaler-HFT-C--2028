@@ -1,0 +1,14 @@
+Running correctness test...
+
+1. edge cases (empty book, unknown/double cancel, bad prices, short depth, ...)
+2. random workload: 200000 ops (add 140191, cancel 39805, bbo 20004), seed 7
+3. thin book workload: 200000 ops (add 90067, cancel 89931, bbo 20002), seed 8
+in 2 and 3 every op is compared against a brute force reference book
+
+Implementation A: PASS
+Implementation B: PASS
+Implementation C: PASS
+
+benchmark workload checksum: A=13740035995088966065 B=13740035995088966065 C=13740035995088966065 (match)
+
+All implementations produce identical results.
