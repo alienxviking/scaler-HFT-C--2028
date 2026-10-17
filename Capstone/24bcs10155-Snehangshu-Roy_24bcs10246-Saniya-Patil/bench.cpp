@@ -28,8 +28,8 @@ using Clock = std::chrono::steady_clock;
 volatile uint64_t g_sink;
 
 // --no-timers skips pass 2 (see run_once) and the clock overhead measurement.
-// We added it after perf record showed clock_gettime at ~37% of C's samples,
-// which was messing up the counters.
+// We added it after perf record showed clock_gettime at about a third of C's
+// samples, which was messing up the counters.
 bool g_op_timers = true;
 
 // One get_bbo() is quicker than one steady_clock::now() call, so timing a

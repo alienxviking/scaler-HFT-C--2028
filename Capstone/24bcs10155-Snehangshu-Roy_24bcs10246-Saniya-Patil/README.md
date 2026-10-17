@@ -114,7 +114,7 @@ op list.
 Each run does two passes, each on a fresh book:
 - pass 1 has no timers in the loop and gives the total time and the checksum
 - pass 2 puts `steady_clock::now()` around every add and cancel and gives the average ns for each.
-  The cost of one `now()` call (~19 ns here) is measured at the start and subtracted; the
+  The cost of one `now()` call (~19 ns here) is measured at the start and subtracted, and the
   raw number is printed too. One `get_bbo` is quicker than a clock read, so for every BBO op we
   time 16 `get_bbo` calls back to back and divide by 16. There's a compiler barrier
   (`std::atomic_signal_fence`) between the calls so the compiler can't merge them. We looked at
@@ -180,7 +180,8 @@ We kept the API from the assignment (double prices in, double prices out), with 
 - Each book also has `size_t order_count() const` (used to print the final state and in one
   `--verify` check).
 - The classes are called `MapBook` (A), `HeapBook` (B) and `ArrayBook` (C) instead of `OrderBook`,
-  and they have the same 5 API functions with the same signatures. There's no virtual base class:
+  and all three have the same 5 API functions with the same signatures (the assignment's, except
+  `add_order` returns `bool`). There's no virtual base class:
   the benchmark and verify code are templates (`play<Book>`, `run_once<Book>`, `edge_cases<Book>`),
   so all three go through exactly the same code without a virtual call per op.
 

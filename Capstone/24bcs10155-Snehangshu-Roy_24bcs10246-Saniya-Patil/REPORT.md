@@ -17,8 +17,8 @@ so nothing ever needs the order of orders within a level, only the total.
 - Best bid/ask: `begin()`, which `std::map` keeps cached, so O(1).
 - Cancel: `unordered_map::find(id)`. libstdc++ uses chained hashing, so that's the bucket array and
   then a pointer to the node with side, tick and qty. Then `map.find(tick)`, subtract, and erase the
-  level node if it hits 0. C also hashes the id, but with open addressing in one flat array, and
-  section 11.3 explains why that difference matters.
+  level node if it hits 0. C also hashes the id, but with open addressing in one flat array
+  (see 11.3).
 
 | op | complexity |
 |---|---|
@@ -63,7 +63,7 @@ so nothing ever needs the order of orders within a level, only the total.
   gets more than half full. `tick == 0` marks an empty slot. Erase uses backward shift (later
   entries of the cluster move back into the hole), so there are no tombstones.
 - Cancel: the hash lookup gives tick and qty directly (no pointer to follow), then subtract from
-  `qty_[i]`, and clear the bit and rescan only if the level emptied and it was the best one.
+  `qty_[i]`. If the level emptied we clear its bit, and we only rescan if it was the best one.
 
 | op | complexity |
 |---|---|
@@ -120,9 +120,9 @@ Some things to know when reading it:
   numbers are in `results/bench_X.txt`).
 - One `get_bbo` takes less time than a clock read, so it's timed in batches of 16 calls. All 16
   read the same book, which is in L1 after the first call, and the CPU can overlap them, so this
-  is the cost of a warm, repeated call, not a cold one.
+  is for repeated calls with the book already in cache. We didn't measure one call on a cold cache.
 - The per-op times add up to more than the total. For C, 0.7 x 56.7 + 0.2 x 38.3 +
-  0.1 x 1.5 = 47 ns per op, but the untimed loop does 33.4 ns per
+  0.1 x 1.5 = 47.5 ns per op, but the untimed loop does 33.4 ns per
   op. We think the clock reads around each op stop the CPU from overlapping one op's cache misses
   with the next op, so per-op is closer to latency and total / ops is closer to throughput.
 - A and B are only 8% apart on total time. That's less than either of them moved between our
@@ -157,7 +157,7 @@ it to finish), while A goes from 0.79 to 0.80. So we did two more things:
 | page-faults | 0 | 0 | 0 |
 
 Page faults per run show up as -1, -1 and 0 in the raw file: the averages for `--runs 1` and `--runs 5`
-differ by a fault or two, so it's really 0 per run. Most of the analysis below uses this table.
+differ by a few faults (out of ~19-25k), so it's really 0 per run. Most of the analysis below uses this table.
 
 ### perf stat output
 
@@ -231,31 +231,31 @@ Top of `perf report --no-children` for each (full output in `results/perf_report
 |  |  | `_Rb_tree_insert_and_rebalance` | 2.9% | kernel (page fault handling) | 1.7% |
 
 In A the container code is mostly inlined into `add_order` and `cancel_order`. In B only the id
-tree walk is inlined; the level hash table and the tree rebalancing show up as their own rows. In C
+tree walk is inlined. The level hash table and the tree rebalancing show up as their own rows. In C
 about half of the time outside the clock is the hash table (`insert`, the probe loop in
 `cancel_order`, and zeroing a new table when it grows, which is `_M_fill_assign` plus some kernel
 time for the page faults). Most of the rest is `add_order` inlined into `run_once` and `play`. C has no
-malloc or free above 0.5% (the only allocations left are the vectors returned by `get_bids` /
+malloc or free above 0.5% (apart from the table growing, the only allocations left are the vectors returned by `get_bids` /
 `get_asks`).
 
 ## 4. Performance analysis
 
 ### 11.1 Which implementation is fastest?
 
-C is the fastest for all three. In total time it's about 3.8x faster than A and
+C is the fastest for add_order, cancel_order and get_bbo. In total time it's about 3.8x faster than A and
 4.1x faster than B, and it uses 4.8x fewer cycles per run than A.
 
 add_order: C 56.7 ns, B 71.2 ns, A 113.4 ns. C does one probe into its hash table and
 one array update, with no allocation and no tree. We expected A to beat B, but B's order map gets
 the ids in increasing order, so every insert goes down the right edge of the tree, which stays in
-cache. A pays for a malloc per order, for rehashing as the table grows (`_M_rehash` is
+cache. Both of them malloc a node per order, but A also pays for rehashing as the table grows (`_M_rehash` is
 6.6% of A's samples) and for a ~13 level walk in the level `std::map` where every
 comparison depends on a random price.
 
 cancel_order: C 38.3 ns, A 201.6 ns, B 471.2 ns, the biggest gap. B looks for a
 random id in a tree of up to 500k nodes (about 19 levels, each node somewhere else in ~30 MB of
-heap), so most steps are cache misses, and then it rebalances. A's hash lookup is only a couple of
-dependent loads, but it still walks the level tree and frees the node. C reads one 16 byte slot
+heap), so most steps are cache misses, and then it rebalances. A's hash lookup only follows two
+pointers (bucket, then node), but it still walks the level tree and frees the node. C reads one 16 byte slot
 that already has the tick and qty.
 
 get_bbo: C 1.5 ns, A 1.7 ns, B 3.0 ns. Nothing gets searched: A and C read cached values, and B also does a hash
@@ -307,17 +307,23 @@ the least memory per order (~32 B vs 48 B or more in A and B).
 2. C's last two tables (8 and 16 MB) are big enough that glibc gives each one its own mmap and
    hands it back to the kernel when it's freed, so the second book faults them in again. A's and
    B's nodes are small mallocs that stay in malloc's free lists. With
-   `MALLOC_MMAP_THRESHOLD_=67108864` (glibc keeps big blocks too), C drops to 16,161 faults,
+   `MALLOC_MMAP_THRESHOLD_=67108864 MALLOC_TRIM_THRESHOLD_=1073741824` (glibc keeps big blocks
+   and doesn't hand freed memory back), C drops to 16,161 faults,
    close to A (15,372) and B (15,943) (`results/page_faults.txt`).
 
 Giving C a 32 MB table from the start (`-DORDER_TABLE_INIT_CAP=2097152`) made it worse:
 100,959 faults instead of 25,155, and 44.9 ms instead of 33.4 ms
 (`results/experiment_presize.txt`, a separate back to back run). glibc only raises its mmap limit
-up to 32 MB, so each of the 11 books the bench creates mmaps and zeroes a fresh 32 MB table.
+up to 32 MB (it's in `man mallopt`), so each of the 11 books the bench creates mmaps and zeroes a
+fresh 32 MB table. That happens in the constructor, before the timer starts, so the faults aren't
+what made the loop slower. We didn't profile that build, but our guess is the size: every add and
+cancel now hits a random slot in 32 MB for the whole run, while the growing table is 8 MB or less
+for the first half of the run, so there are more cache and dTLB misses.
 
 ### 11.5 Production choice
 
-We would pick C, with the table allocated once at startup.
+We would pick C, with the table allocated once at startup and sized for the expected peak, not
+bigger (see 11.4).
 
 - Latency: lowest on every op, and its cancel is about 5x faster than A's. Cancels and
   modifies are most of the messages in a real market.
@@ -327,8 +333,8 @@ We would pick C, with the table allocated once at startup.
 - Memory: a fixed 80 KB for the levels and a 16 byte slot per order (~32 B at half load), with no
   allocator overhead.
 - Cache behavior: about 5x fewer L1 misses than A per run, and the hot data fits in L1/L2.
-- Complexity: C's weak point. It has a hand written hash table (the backward shift delete is easy
-  to get subtly wrong) and bit tricks, while A is ~100 lines of standard containers.
+- Complexity: this is C's weak point. It has a hand written hash table (the backward shift delete
+  is easy to mess up) and bit tricks, while A is ~100 lines of standard containers.
 - Maintainability: OK because `--verify` checks C against a brute force book after every op, but C
   relies on the price band being small and fixed. A works for any price.
 
@@ -337,7 +343,7 @@ cancel and depth queries. If latency didn't matter we'd pick A, because it's the
 
 ### 11.6 What would we try next?
 
-- Take integer ticks in the API. `llround` and the grid check are 2.0% of C's samples, and
+- Take integer ticks in the API. `llround` alone is 2.0% of C's samples, and
   tick to double is most of `get_bbo`.
 - Allocate the order table once and pre-touch it, maybe with huge pages (16 MB is 4096 normal
   pages but only 8 huge ones, so fewer dTLB misses).
