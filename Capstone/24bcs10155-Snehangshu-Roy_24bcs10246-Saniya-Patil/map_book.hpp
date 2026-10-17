@@ -1,6 +1,6 @@
 #pragma once
 
-// Implementation A: the "textbook" version.
+// Implementation A: the simple one, standard containers only.
 //   price levels -> std::map<tick, total qty> per side (red-black tree)
 //   orders       -> std::unordered_map<id, Order>
 // Bids use std::greater so begin() is always the best price on both sides.

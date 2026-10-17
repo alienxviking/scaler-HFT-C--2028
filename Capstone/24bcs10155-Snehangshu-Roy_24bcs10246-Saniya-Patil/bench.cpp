@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <atomic>
 #include <cctype>
+#include <cerrno>
 #include <chrono>
 #include <cstdio>
 #include <cstdlib>
@@ -26,8 +27,9 @@ using Clock = std::chrono::steady_clock;
 // results of the timed pass end up here so the compiler has to keep them
 volatile uint64_t g_sink;
 
-// --no-timers skips pass 2 (see run_once). We added it after perf record showed
-// clock_gettime at ~37% of C's samples, which was messing up the counters.
+// --no-timers skips pass 2 (see run_once) and the clock overhead measurement.
+// We added it after perf record showed clock_gettime at ~37% of C's samples,
+// which was messing up the counters.
 bool g_op_timers = true;
 
 // One get_bbo() is quicker than one steady_clock::now() call, so timing a
@@ -57,10 +59,11 @@ double ns_between(Clock::time_point a, Clock::time_point b) {
     return std::chrono::duration<double, std::nano>(b - a).count();
 }
 
-// Pass 1 plays the whole workload with no timers inside the loop -> total time
-// and checksum. Pass 2 plays it again on a fresh book and wraps every
-// add/cancel/bbo call in steady_clock::now() -> per-op averages.
-// (doing both in one pass would make the total time mostly clock calls)
+// Pass 1: play the whole workload with no timers in the loop, for the total
+// time and the checksum.
+// Pass 2: play it again on a fresh book with steady_clock::now() around every
+// add/cancel/bbo, for the per-op averages.
+// (one pass with the timers in it would make the total time mostly clock calls)
 template <class Book>
 RunResult run_once(const std::vector<Op>& ops) {
     RunResult r;
@@ -134,12 +137,13 @@ template <class Book>
 int run_bench(const char* name, size_t n_ops, uint32_t seed, int runs) {
     std::vector<Op> ops = make_workload(n_ops, seed);
     WorkloadCounts c = count_ops(ops);
-    double overhead = timer_overhead_ns();
+    double overhead = g_op_timers ? timer_overhead_ns() : 0;
 
     std::printf("Implementation %s\n", name);
     std::printf("ops: %zu (add %zu, cancel %zu, bbo %zu), seed %u, runs %d\n", ops.size(), c.add,
                 c.cancel, c.bbo, seed, runs);
-    std::printf("steady_clock::now() overhead: %.1f ns\n\n", overhead);
+    if (g_op_timers) std::printf("steady_clock::now() overhead: %.1f ns\n", overhead);
+    std::printf("\n");
 
     std::vector<double> total, add, cancel, bbo;
     uint64_t checksum = 0;
@@ -193,22 +197,37 @@ void usage() {
     std::printf("       ./bench --verify [--ops N] [--seed S]\n");
 }
 
+// the whole string has to be a number between lo and hi, so things like
+// "-1", "1e6" or "abc" get rejected instead of half parsed
+bool read_num(const char* s, unsigned long long lo, unsigned long long hi, unsigned long long& out) {
+    if (!std::isdigit((unsigned char)s[0])) return false;
+    char* end;
+    errno = 0;
+    out = std::strtoull(s, &end, 10);
+    return *end == '\0' && errno == 0 && out >= lo && out <= hi;
+}
+
 int main(int argc, char** argv) {
     std::string impl;
     bool verify = false;
     int runs = 5;
-    size_t ops = 0;
+    size_t ops = 0;  // 0 = not given
     uint32_t seed = 0;
     bool seed_set = false;
+    unsigned long long n = 0;
 
     for (int i = 1; i < argc; i++) {
         std::string a = argv[i];
+        bool has_val = i + 1 < argc;
         if (a == "--verify") verify = true;
         else if (a == "--no-timers") g_op_timers = false;
-        else if (a == "--impl" && i + 1 < argc) impl = argv[++i];
-        else if (a == "--runs" && i + 1 < argc) runs = std::atoi(argv[++i]);
-        else if (a == "--ops" && i + 1 < argc) ops = std::strtoull(argv[++i], nullptr, 10);
-        else if (a == "--seed" && i + 1 < argc) { seed = std::strtoul(argv[++i], nullptr, 10); seed_set = true; }
+        else if (a == "--impl" && has_val) impl = argv[++i];
+        else if (a == "--runs" && has_val && read_num(argv[++i], 1, 1000, n)) runs = (int)n;
+        else if (a == "--ops" && has_val && read_num(argv[++i], 1, 10000000, n)) ops = n;
+        else if (a == "--seed" && has_val && read_num(argv[++i], 0, 4294967295ULL, n)) {
+            seed = (uint32_t)n;
+            seed_set = true;
+        }
         else { usage(); return 1; }
     }
 
@@ -216,7 +235,6 @@ int main(int argc, char** argv) {
 
     if (ops == 0) ops = 1000000;
     if (!seed_set) seed = 42;
-    if (runs < 1) runs = 1;
     for (char& ch : impl) ch = (char)std::toupper((unsigned char)ch);
     if (impl == "A") return run_bench<MapBook>("A (std::map + unordered_map)", ops, seed, runs);
     if (impl == "B") return run_bench<HeapBook>("B (priority_queue + lazy delete)", ops, seed, runs);

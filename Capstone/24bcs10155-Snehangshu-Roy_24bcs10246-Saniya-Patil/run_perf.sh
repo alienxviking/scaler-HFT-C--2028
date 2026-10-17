@@ -4,6 +4,13 @@
 set -e
 cd "$(dirname "$0")"
 
+# check perf works before anything in results/ gets overwritten
+if ! perf stat -e task-clock true > /dev/null 2>&1; then
+    echo "perf doesn't work here (not installed, or not allowed)."
+    echo "try sudo, or lower /proc/sys/kernel/perf_event_paranoid (we used docker --privileged)"
+    exit 1
+fi
+
 make -s bench
 mkdir -p results
 
@@ -42,25 +49,33 @@ rm -f perf.data perf.data.old
 echo "per run counters"
 ./per_run_counters.sh | tee results/perf_per_run.txt
 
-# experiment from the report (page faults): C with its order table pre-sized
-# to 2^21 slots (32 MB) instead of starting at 2^16 and doubling
+# page faults (REPORT 11.4): --runs 1 vs --runs 5, and the same with glibc told
+# to keep freed memory in the heap instead of giving big blocks back to the kernel
+echo "page faults"
+faults() { perf stat -x, -r 5 -e page-faults "$@" 2>&1 > /dev/null | cut -d, -f1; }
+{
+    echo "### page faults (perf stat -r 5 average), --runs 1 vs --runs 5"
+    for impl in A B C; do
+        echo "$impl  --runs 1: $(faults ./bench --impl $impl --runs 1)   --runs 5: $(faults ./bench --impl $impl --runs 5)"
+    done
+    echo
+    echo "### --runs 5 again with MALLOC_MMAP_THRESHOLD_=67108864 MALLOC_TRIM_THRESHOLD_=1073741824"
+    for impl in A B C; do
+        echo "$impl  $(export MALLOC_MMAP_THRESHOLD_=67108864 MALLOC_TRIM_THRESHOLD_=1073741824; faults ./bench --impl $impl --runs 5)"
+    done
+} | tee results/page_faults.txt
+
+# experiment from the report: C with its order table pre-sized to 2^21 slots
+# (32 MB) instead of starting at 2^16 and doubling
 echo "pre-size experiment"
 g++ -std=c++17 -O2 -g -fno-omit-frame-pointer -DORDER_TABLE_INIT_CAP=2097152 -o bench_presized bench.cpp
 {
     echo "### C as submitted (table starts at 2^16 slots and doubles, ends at 2^20 = 16 MB)"
     ./bench --impl C | sed -n '/median/,/bbo/p'
-    perf stat -r 5 -e task-clock,page-faults ./bench --impl C 2>&1 >/dev/null | grep -E "task-clock|page-faults"
+    perf stat -r 5 -e task-clock,page-faults ./bench --impl C 2>&1 > /dev/null | grep -E "task-clock|page-faults"
     echo
     echo "### C built with -DORDER_TABLE_INIT_CAP=2097152 (2^21 slots = 32 MB from the start)"
     ./bench_presized --impl C | sed -n '/median/,/bbo/p'
-    perf stat -r 5 -e task-clock,page-faults ./bench_presized --impl C 2>&1 >/dev/null | grep -E "task-clock|page-faults"
-    echo
-    echo "### page faults for --runs 1 vs --runs 5 (same number = they all happen in the first run)"
-    for impl in A B C; do
-        for runs in 1 5; do
-            n=$(perf stat -x, -e page-faults ./bench --impl $impl --runs $runs 2>&1 >/dev/null | cut -d, -f1)
-            echo "$impl --runs $runs: $n"
-        done
-    done
+    perf stat -r 5 -e task-clock,page-faults ./bench_presized --impl C 2>&1 > /dev/null | grep -E "task-clock|page-faults"
 } | tee results/experiment_presize.txt
 rm -f bench_presized

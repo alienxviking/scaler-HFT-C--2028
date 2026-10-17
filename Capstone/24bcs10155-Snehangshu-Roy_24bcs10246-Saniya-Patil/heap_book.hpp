@@ -12,6 +12,7 @@
 // top we pop stale ticks until the top is live again, so the top of the heap
 // is always a live level and get_bbo() stays O(1).
 
+#include <functional>
 #include <map>
 #include <queue>
 #include <unordered_map>
@@ -65,8 +66,8 @@ public:
         return b;
     }
 
-    // heap is not sorted, so for depth we copy it and pop until we have
-    // `depth` live levels (skipping the stale ones)
+    // heap isn't sorted, so for depth we copy it and keep popping until we
+    // have depth live levels (stale ones get skipped)
     std::vector<Level> get_bids(int depth = 10) const { return top(bid_heap_, bid_levels_, depth); }
     std::vector<Level> get_asks(int depth = 10) const { return top(ask_heap_, ask_levels_, depth); }
 

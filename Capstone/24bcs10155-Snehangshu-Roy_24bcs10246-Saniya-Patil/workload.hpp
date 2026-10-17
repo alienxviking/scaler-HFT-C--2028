@@ -25,7 +25,7 @@ struct WorkloadOptions {
     int add_pct = 70;         // % adds, cancels fill up to 90%, the last 10% are bbo
     int bad_cancel_pct = 0;   // % of cancels that go to an unknown / already cancelled id
     bool random_ids = false;  // random 64 bit ids instead of 1, 2, 3, ...
-    int band = 5000;          // only use the `band` ticks closest to the mid on each side
+    int band = 5000;          // only use this many ticks closest to the mid on each side
 };
 
 // Generates the op list up front so every implementation sees exactly the

@@ -9,7 +9,8 @@
 //    reference: add/cancel return value, BBO, top 10 bids and asks, and the
 //    bids and asks at a second depth that changes every op (-2 .. 22, and the
 //    full book every 1000 ops)
-// 4. the real 1M op benchmark workload on A, B and C, the checksums must match
+// 4. the real 1M op benchmark workload, checked the same way as 3, and the
+//    checksums from play() have to match as well
 
 #include <cmath>
 #include <cstdio>
@@ -124,11 +125,13 @@ bool edge_cases(std::string& why) {
 
     // bad prices / qty get rejected
     const double inf = std::numeric_limits<double>::infinity();
-    CHECK(!book.add_order(1, Side::Buy, 100.00, 10));  // mid, not in bid band
+    CHECK(!book.add_order(1, Side::Buy, 100.00, 10));  // the mid is in neither band
+    CHECK(!book.add_order(1, Side::Sell, 100.00, 10));
     CHECK(!book.add_order(1, Side::Buy, 49.99, 10));
     CHECK(!book.add_order(1, Side::Sell, 99.99, 10));  // ask below band
     CHECK(!book.add_order(1, Side::Sell, 150.01, 10));
     CHECK(!book.add_order(1, Side::Buy, 99.985, 10));  // not on the tick grid
+    CHECK(!book.add_order(1, Side::Buy, 99.991, 10));
     CHECK(!book.add_order(1, Side::Buy, std::nan(""), 10));
     CHECK(!book.add_order(1, Side::Sell, inf, 10));
     CHECK(!book.add_order(1, Side::Buy, -inf, 10));
@@ -150,6 +153,12 @@ bool edge_cases(std::string& why) {
     CHECK(!book.cancel_order(0));
     b = book.get_bbo();
     CHECK(!b.has_bid && !b.has_ask);
+
+    // the ticks right next to the mid are fine
+    CHECK(book.add_order(5, Side::Buy, 99.99, 1) && book.add_order(6, Side::Sell, 100.01, 1));
+    b = book.get_bbo();
+    CHECK(to_tick(b.bid_price) == 9999 && to_tick(b.ask_price) == 10001);
+    CHECK(book.cancel_order(5) && book.cancel_order(6));
 
     // biggest allowed qty, twice on one level (the level total needs 64 bits)
     if (sizeof(long) == 8) {
@@ -220,6 +229,14 @@ bool edge_cases(std::string& why) {
     b = book.get_bbo();
     CHECK(!b.has_bid && !b.has_ask);
     CHECK(book.get_bids(10).empty() && book.get_asks(10).empty());
+
+    // default depth is 10
+    for (int k = 0; k < 12; k++) {
+        CHECK(book.add_order(200 + k, Side::Buy, to_price(9000 + k), 1));
+        CHECK(book.add_order(300 + k, Side::Sell, to_price(11000 + k), 1));
+    }
+    CHECK(book.get_bids().size() == 10 && book.get_asks().size() == 10);
+    for (int k = 0; k < 12; k++) CHECK(book.cancel_order(200 + k) && book.cancel_order(300 + k));
 
     // a level in the middle empties, then the best one (in B this leaves a
     // stale tick in the heap that has to be skipped)
@@ -407,8 +424,9 @@ inline int run_verify(size_t n_ops, uint32_t seed) {
     if (!edge_cases<MapBook>(why)) fail(0, "edge cases: " + why);
     if (!edge_cases<HeapBook>(why)) fail(1, "edge cases: " + why);
     if (!edge_cases<ArrayBook>(why)) fail(2, "edge cases: " + why);
-    std::printf("1. edge cases: empty book, unknown / double cancel, bad prices and qty, id 0 and max,\n"
-                "   short depth, levels emptying and coming back\n");
+    bool edge_ok = err[0].empty() && err[1].empty() && err[2].empty();
+    std::printf("1. edge cases (empty book, bad prices/qty, unknown/double cancel, depth, emptied levels): %s\n",
+                edge_ok ? "ok" : "FAILED");
 
     bool table_ok = order_table_test(why);
     if (!table_ok) fail(2, "hash table test: " + why);
@@ -452,8 +470,18 @@ inline int run_verify(size_t n_ops, uint32_t seed) {
         if (!C.error.empty()) fail(2, label + C.error);
     }
 
-    // the real benchmark workload: all three must end with the same checksum
+    // the real benchmark workload: side by side like above, and all three must
+    // end with the same checksum
     std::vector<Op> bench_ops = make_workload(1000000, 42);
+    {
+        Checked<MapBook> A;
+        Checked<HeapBook> B;
+        Checked<ArrayBook> C;
+        play_side_by_side(bench_ops, A, B, C);
+        if (!A.error.empty()) fail(0, "benchmark workload, " + A.error);
+        if (!B.error.empty()) fail(1, "benchmark workload, " + B.error);
+        if (!C.error.empty()) fail(2, "benchmark workload, " + C.error);
+    }
     uint64_t sum[3];
     {
         auto book = std::make_unique<MapBook>();
@@ -468,9 +496,9 @@ inline int run_verify(size_t n_ops, uint32_t seed) {
         sum[2] = play(*book, bench_ops);
     }
     bool sums_match = sum[0] == sum[1] && sum[1] == sum[2];
-    std::printf("4. benchmark workload (1M ops, seed 42) checksum: A=%llu B=%llu C=%llu %s\n\n",
-                (unsigned long long)sum[0], (unsigned long long)sum[1], (unsigned long long)sum[2],
-                sums_match ? "(match)" : "(MISMATCH)");
+    std::printf("4. the benchmark workload itself (1M ops, seed 42), compared after every op like in 3\n");
+    std::printf("   checksum: A=%llu B=%llu C=%llu %s\n\n", (unsigned long long)sum[0],
+                (unsigned long long)sum[1], (unsigned long long)sum[2], sums_match ? "(match)" : "(MISMATCH)");
 
     bool all_ok = sums_match;
     const char* names = "ABC";
