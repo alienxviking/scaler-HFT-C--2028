@@ -1,18 +1,18 @@
 Implementation C (flat array + bitmap + own hash table)
 ops: 1000000 (add 700471, cancel 199303, bbo 100226), seed 42, runs 5
-steady_clock::now() overhead: 17.9 ns
+steady_clock::now() overhead: 18.9 ns
 
-run 1: total    43.36 ms | raw add   70.5 ns | cancel   40.9 ns | bbo  2.63 ns
-run 2: total    30.71 ms | raw add   65.4 ns | cancel   48.2 ns | bbo  2.63 ns
-run 3: total    34.99 ms | raw add   74.1 ns | cancel   54.1 ns | bbo  2.64 ns
-run 4: total    30.60 ms | raw add   57.3 ns | cancel   42.0 ns | bbo  2.64 ns
-run 5: total    28.63 ms | raw add   64.4 ns | cancel   47.3 ns | bbo  2.63 ns
+run 1: total    43.67 ms | raw add   89.5 ns | cancel   57.2 ns | bbo  2.65 ns
+run 2: total    37.17 ms | raw add   69.8 ns | cancel   53.1 ns | bbo  2.66 ns
+run 3: total    31.24 ms | raw add   58.4 ns | cancel   43.0 ns | bbo  2.66 ns
+run 4: total    27.30 ms | raw add   75.6 ns | cancel   60.5 ns | bbo  2.66 ns
+run 5: total    33.37 ms | raw add   77.5 ns | cancel   63.8 ns | bbo  2.67 ns
 
 median of 5 runs:
-  total time      30.71 ms  (30.7 ns per op, untimed loop)
-  ns / add         47.5  (raw 65.4)
-  ns / cancel      29.5  (raw 47.3)
-  ns / bbo         1.52  (raw 2.63, timed in batches of 16 calls)
+  total time      33.37 ms  (33.4 ns per op, untimed loop)
+  ns / add         56.7  (raw 75.6)
+  ns / cancel      38.3  (raw 57.2)
+  ns / bbo         1.48  (raw 2.66, timed in batches of 16 calls)
 
 Final BBO:
 Bid: 99.99 x 1981

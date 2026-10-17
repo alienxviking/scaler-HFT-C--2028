@@ -1,15 +1,15 @@
 
  Performance counter stats for './bench --impl A' (5 runs):
 
-           2013.92 msec task-clock                       #    0.999 CPUs utilized               ( +-  1.47% )
-        9715418349      cycles                           #    4.824 GHz                         ( +-  0.85% )  (85.70%)
-        7705702756      instructions                     #    0.79  insn per cycle              ( +-  0.19% )  (85.73%)
-        1600826779      branches                         #  794.880 M/sec                       ( +-  0.22% )  (85.71%)
-          93390315      branch-misses                    #    5.83% of all branches             ( +-  0.20% )  (85.70%)
-          61775696      cache-misses                                                            ( +-  1.10% )  (85.73%)
-         196744365      L1-dcache-load-misses                                                   ( +-  0.11% )  (85.70%)
-           7191714      dTLB-load-misses                                                        ( +-  0.69% )  (85.73%)
-             19610      page-faults                      #    9.737 K/sec                       ( +-  0.00% )
+           2008.35 msec task-clock                       #    0.999 CPUs utilized               ( +-  1.65% )
+        9713878441      cycles                           #    4.837 GHz                         ( +-  1.62% )  (85.69%)
+        7737737549      instructions                     #    0.80  insn per cycle              ( +-  0.28% )  (85.75%)
+        1600419736      branches                         #  796.881 M/sec                       ( +-  0.20% )  (85.76%)
+          93480531      branch-misses                    #    5.84% of all branches             ( +-  0.32% )  (85.76%)
+          62976263      cache-misses                                                            ( +-  0.60% )  (85.76%)
+         199550796      L1-dcache-load-misses                                                   ( +-  1.06% )  (85.76%)
+           9309485      dTLB-load-misses                                                        ( +-  1.38% )  (85.52%)
+             19610      page-faults                      #    9.764 K/sec                       ( +-  0.01% )
 
-            2.0168 +- 0.0297 seconds time elapsed  ( +-  1.47% )
+            2.0114 +- 0.0332 seconds time elapsed  ( +-  1.65% )
 
