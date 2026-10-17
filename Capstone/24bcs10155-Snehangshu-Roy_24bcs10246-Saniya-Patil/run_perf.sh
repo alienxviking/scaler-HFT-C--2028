@@ -41,3 +41,26 @@ rm -f perf.data perf.data.old
 
 echo "per run counters"
 ./per_run_counters.sh | tee results/perf_per_run.txt
+
+# experiment from the report (page faults): C with its order table pre-sized
+# to 2^21 slots (32 MB) instead of starting at 2^16 and doubling
+echo "pre-size experiment"
+g++ -std=c++17 -O2 -g -fno-omit-frame-pointer -DORDER_TABLE_INIT_CAP=2097152 -o bench_presized bench.cpp
+{
+    echo "### C as submitted (table starts at 2^16 slots and doubles, ends at 2^20 = 16 MB)"
+    ./bench --impl C | sed -n '/median/,/bbo/p'
+    perf stat -r 5 -e task-clock,page-faults ./bench --impl C 2>&1 >/dev/null | grep -E "task-clock|page-faults"
+    echo
+    echo "### C built with -DORDER_TABLE_INIT_CAP=2097152 (2^21 slots = 32 MB from the start)"
+    ./bench_presized --impl C | sed -n '/median/,/bbo/p'
+    perf stat -r 5 -e task-clock,page-faults ./bench_presized --impl C 2>&1 >/dev/null | grep -E "task-clock|page-faults"
+    echo
+    echo "### page faults for --runs 1 vs --runs 5 (same number = they all happen in the first run)"
+    for impl in A B C; do
+        for runs in 1 5; do
+            n=$(perf stat -x, -e page-faults ./bench --impl $impl --runs $runs 2>&1 >/dev/null | cut -d, -f1)
+            echo "$impl --runs $runs: $n"
+        done
+    done
+} | tee results/experiment_presize.txt
+rm -f bench_presized

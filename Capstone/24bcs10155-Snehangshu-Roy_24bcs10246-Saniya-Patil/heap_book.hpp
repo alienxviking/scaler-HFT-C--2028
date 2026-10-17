@@ -8,8 +8,9 @@
 // The heap can't delete from the middle, so when a level empties we leave
 // its tick in the heap ("stale") and only pop it once it reaches the top.
 // Each tick is pushed at most once (in_heap flag), so the heap never holds
-// more than 5000 entries per side. After every cancel we clean the top, so
-// the top of the heap is always a live level and get_bbo() stays O(1).
+// more than 5000 entries per side. When a cancel empties the level at the
+// top we pop stale ticks until the top is live again, so the top of the heap
+// is always a live level and get_bbo() stays O(1).
 
 #include <map>
 #include <queue>

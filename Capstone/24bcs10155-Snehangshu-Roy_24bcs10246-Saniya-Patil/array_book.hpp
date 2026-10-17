@@ -16,6 +16,13 @@
 
 #include "common.hpp"
 
+// Starting number of slots in the order table (it doubles when half full).
+// Only a macro so the pre-sizing experiment in REPORT.md can be rebuilt with
+// -DORDER_TABLE_INIT_CAP=2097152 without editing the code.
+#ifndef ORDER_TABLE_INIT_CAP
+#define ORDER_TABLE_INIT_CAP (1 << 16)
+#endif
+
 // id -> (tick, qty). Linear probing, power of two capacity, max load 0.5.
 // Deletion uses backward shift instead of tombstones so lookups never have
 // to walk over dead slots.
@@ -27,7 +34,7 @@ public:
         int32_t qty;
     };
 
-    explicit OrderTable(size_t initial_capacity = 1 << 16) { init(initial_capacity); }
+    explicit OrderTable(size_t initial_capacity = ORDER_TABLE_INIT_CAP) { init(initial_capacity); }
 
     // returns false if the id is already in the table
     bool insert(uint64_t id, int tick, int qty) {
