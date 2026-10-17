@@ -4,23 +4,24 @@
 #
 # Total Lost Samples: 0
 #
-# Samples: 8K of event 'cycles:P'
-# Event count (approx.): 9725293022
+# Samples: 7K of event 'cycles:P'
+# Event count (approx.): 9748601039
 #
 # Overhead  Command  Shared Object         Symbol                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
 # ........  .......  ....................  .....................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................
 #
-    34.26%  bench    bench                 [.] MapBook::add_order(unsigned long, Side, double, long)
-    22.94%  bench    bench                 [.] MapBook::cancel_order(unsigned long)
-    10.29%  bench    [vdso]                [.] __vdso_clock_gettime
-     6.50%  bench    bench                 [.] std::_Hashtable<unsigned long, std::pair<unsigned long const, MapBook::Order>, std::allocator<std::pair<unsigned long const, MapBook::Order> >, std::__detail::_Select1st, std::equal_to<unsigned long>, std::hash<unsigned long>, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<false, false, true> >::_M_rehash(unsigned long, unsigned long const&)
-     6.05%  bench    bench                 [.] RunResult run_once<MapBook>(std::vector<Op, std::allocator<Op> > const&)
-     1.74%  bench    libc.so.6             [.] 0x00000000000a9bdb
-     1.26%  bench    libstdc++.so.6.0.33   [.] std::chrono::_V2::steady_clock::now()
-     0.78%  bench    libc.so.6             [.] malloc
-     0.71%  bench    libc.so.6             [.] cfree
-     0.68%  bench    libstdc++.so.6.0.33   [.] std::__detail::_Prime_rehash_policy::_M_need_rehash(unsigned long, unsigned long, unsigned long) const
-     0.58%  bench    libc.so.6             [.] 0x00000000000ab300
+    32.39%  bench    bench                 [.] MapBook::add_order(unsigned long, Side, double, long)
+    22.16%  bench    bench                 [.] MapBook::cancel_order(unsigned long)
+    11.10%  bench    [vdso]                [.] __vdso_clock_gettime
+     6.12%  bench    bench                 [.] RunResult run_once<MapBook>(std::vector<Op, std::allocator<Op> > const&)
+     5.48%  bench    bench                 [.] std::_Hashtable<unsigned long, std::pair<unsigned long const, MapBook::Order>, std::allocator<std::pair<unsigned long const, MapBook::Order> >, std::__detail::_Select1st, std::equal_to<unsigned long>, std::hash<unsigned long>, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<false, false, true> >::_M_rehash(unsigned long, unsigned long const&)
+     2.00%  bench    libc.so.6             [.] 0x00000000000a9bdb
+     1.87%  bench    libc.so.6             [.] malloc
+     1.81%  bench    bench                 [.] unsigned long play<MapBook>(MapBook&, std::vector<Op, std::allocator<Op> > const&)
+     0.58%  bench    libstdc++.so.6.0.33   [.] std::chrono::_V2::steady_clock::now()
+     0.57%  bench    libc.so.6             [.] 0x00000000000ab300
+     0.56%  bench    libc.so.6             [.] cfree
+     0.53%  bench    libm.so.6             [.] llroundf32x
 #
 # (Cannot load tips.txt file, please install perf!)
 #
@@ -31,8 +32,8 @@
 #
 # Total Lost Samples: 0
 #
-# Samples: 8K of event 'cycles:P'
-# Event count (approx.): 9725293022
+# Samples: 7K of event 'cycles:P'
+# Event count (approx.): 9748601039
 #
 # Children      Self  Command  Shared Object         Symbol                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
 # ........  ........  .......  ....................  .....................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................
@@ -44,108 +45,135 @@
             |
             ---__libc_start_main
                _start
-    99.75%     0.00%  bench    libc.so.6             [.] 0x00007d4d91fc11ca
+    99.73%     0.00%  bench    libc.so.6             [.] 0x00007a709bc2f1ca
             |
-            ---0x7d4d91fc11ca
+            ---0x7a709bc2f1ca
                __libc_start_main
                _start
-    99.75%     0.00%  bench    bench                 [.] main
+    99.73%     0.00%  bench    bench                 [.] main
             |
             ---main
-               0x7d4d91fc11ca
+               0x7a709bc2f1ca
                __libc_start_main
                _start
-    99.58%     0.43%  bench    bench                 [.] int run_bench<MapBook>(char const*, unsigned long, unsigned int, int)
+    99.67%     0.33%  bench    bench                 [.] int run_bench<MapBook>(char const*, unsigned long, unsigned int, int)
             |
             ---int run_bench<MapBook>(char const*, unsigned long, unsigned int, int)
                main
-               0x7d4d91fc11ca
+               0x7a709bc2f1ca
                __libc_start_main
                _start
-    88.87%     6.05%  bench    bench                 [.] RunResult run_once<MapBook>(std::vector<Op, std::allocator<Op> > const&)
+    88.60%     6.12%  bench    bench                 [.] RunResult run_once<MapBook>(std::vector<Op, std::allocator<Op> > const&)
             |
             ---RunResult run_once<MapBook>(std::vector<Op, std::allocator<Op> > const&)
                int run_bench<MapBook>(char const*, unsigned long, unsigned int, int)
                main
-               0x7d4d91fc11ca
+               0x7a709bc2f1ca
                __libc_start_main
                _start
-    45.10%    34.26%  bench    bench                 [.] MapBook::add_order(unsigned long, Side, double, long)
+    44.52%    32.39%  bench    bench                 [.] MapBook::add_order(unsigned long, Side, double, long)
             |
             ---MapBook::add_order(unsigned long, Side, double, long)
                |          
-                --41.37%--RunResult run_once<MapBook>(std::vector<Op, std::allocator<Op> > const&)
+               |--24.92%--unsigned long play<MapBook>(MapBook&, std::vector<Op, std::allocator<Op> > const&)
+               |          |          
+               |           --20.99%--RunResult run_once<MapBook>(std::vector<Op, std::allocator<Op> > const&)
+               |                     int run_bench<MapBook>(char const*, unsigned long, unsigned int, int)
+               |                     main
+               |                     0x7a709bc2f1ca
+               |                     __libc_start_main
+               |                     _start
+               |          
+                --19.60%--RunResult run_once<MapBook>(std::vector<Op, std::allocator<Op> > const&)
                           int run_bench<MapBook>(char const*, unsigned long, unsigned int, int)
                           main
-                          0x7d4d91fc11ca
+                          0x7a709bc2f1ca
                           __libc_start_main
                           _start
-    23.19%    22.94%  bench    bench                 [.] MapBook::cancel_order(unsigned long)
+    39.38%     1.81%  bench    bench                 [.] unsigned long play<MapBook>(MapBook&, std::vector<Op, std::allocator<Op> > const&)
+            |
+            ---unsigned long play<MapBook>(MapBook&, std::vector<Op, std::allocator<Op> > const&)
+               |          
+               |--33.49%--RunResult run_once<MapBook>(std::vector<Op, std::allocator<Op> > const&)
+               |          int run_bench<MapBook>(char const*, unsigned long, unsigned int, int)
+               |          main
+               |          0x7a709bc2f1ca
+               |          __libc_start_main
+               |          _start
+               |          
+                --5.89%--int run_bench<MapBook>(char const*, unsigned long, unsigned int, int)
+                          main
+                          0x7a709bc2f1ca
+                          __libc_start_main
+                          _start
+    22.47%    22.16%  bench    bench                 [.] MapBook::cancel_order(unsigned long)
             |
             ---MapBook::cancel_order(unsigned long)
                |          
-                --21.48%--RunResult run_once<MapBook>(std::vector<Op, std::allocator<Op> > const&)
-                          int run_bench<MapBook>(char const*, unsigned long, unsigned int, int)
-                          main
-                          0x7d4d91fc11ca
-                          __libc_start_main
-                          _start
-    11.55%     1.26%  bench    libstdc++.so.6.0.33   [.] std::chrono::_V2::steady_clock::now()
-            |
-            ---std::chrono::_V2::steady_clock::now()
+               |--11.99%--unsigned long play<MapBook>(MapBook&, std::vector<Op, std::allocator<Op> > const&)
+               |          |          
+               |           --10.40%--RunResult run_once<MapBook>(std::vector<Op, std::allocator<Op> > const&)
+               |                     int run_bench<MapBook>(char const*, unsigned long, unsigned int, int)
+               |                     main
+               |                     0x7a709bc2f1ca
+               |                     __libc_start_main
+               |                     _start
                |          
                 --10.48%--RunResult run_once<MapBook>(std::vector<Op, std::allocator<Op> > const&)
                           int run_bench<MapBook>(char const*, unsigned long, unsigned int, int)
                           main
-                          0x7d4d91fc11ca
+                          0x7a709bc2f1ca
                           __libc_start_main
                           _start
-    10.73%     0.49%  bench    libc.so.6             [.] clock_gettime
+    11.70%     0.58%  bench    libstdc++.so.6.0.33   [.] std::chrono::_V2::steady_clock::now()
+            |
+            ---std::chrono::_V2::steady_clock::now()
+               |          
+                --10.68%--RunResult run_once<MapBook>(std::vector<Op, std::allocator<Op> > const&)
+                          int run_bench<MapBook>(char const*, unsigned long, unsigned int, int)
+                          main
+                          0x7a709bc2f1ca
+                          __libc_start_main
+                          _start
+    11.45%     0.40%  bench    libc.so.6             [.] clock_gettime
             |
             ---clock_gettime
                |          
-                --10.24%--std::chrono::_V2::steady_clock::now()
+                --11.06%--std::chrono::_V2::steady_clock::now()
                           |          
-                           --10.01%--RunResult run_once<MapBook>(std::vector<Op, std::allocator<Op> > const&)
+                           --10.19%--RunResult run_once<MapBook>(std::vector<Op, std::allocator<Op> > const&)
                                      int run_bench<MapBook>(char const*, unsigned long, unsigned int, int)
                                      main
-                                     0x7d4d91fc11ca
+                                     0x7a709bc2f1ca
                                      __libc_start_main
                                      _start
-    10.29%    10.29%  bench    [vdso]                [.] __vdso_clock_gettime
+    11.10%    11.10%  bench    [vdso]                [.] __vdso_clock_gettime
             |
             ---__vdso_clock_gettime
                |          
-                --10.24%--clock_gettime
+                --11.05%--clock_gettime
                           std::chrono::_V2::steady_clock::now()
                           |          
-                           --10.01%--RunResult run_once<MapBook>(std::vector<Op, std::allocator<Op> > const&)
+                           --10.18%--RunResult run_once<MapBook>(std::vector<Op, std::allocator<Op> > const&)
                                      int run_bench<MapBook>(char const*, unsigned long, unsigned int, int)
                                      main
-                                     0x7d4d91fc11ca
+                                     0x7a709bc2f1ca
                                      __libc_start_main
                                      _start
-     7.99%     0.71%  bench    libc.so.6             [.] cfree
+     7.93%     0.56%  bench    libc.so.6             [.] cfree
             |
             ---cfree
                |          
-                --7.19%--RunResult run_once<MapBook>(std::vector<Op, std::allocator<Op> > const&)
+                --6.72%--RunResult run_once<MapBook>(std::vector<Op, std::allocator<Op> > const&)
                           int run_bench<MapBook>(char const*, unsigned long, unsigned int, int)
                           main
-                          0x7d4d91fc11ca
+                          0x7a709bc2f1ca
                           __libc_start_main
                           _start
-     7.05%     6.50%  bench    bench                 [.] std::_Hashtable<unsigned long, std::pair<unsigned long const, MapBook::Order>, std::allocator<std::pair<unsigned long const, MapBook::Order> >, std::__detail::_Select1st, std::equal_to<unsigned long>, std::hash<unsigned long>, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<false, false, true> >::_M_rehash(unsigned long, unsigned long const&)
+     6.03%     5.48%  bench    bench                 [.] std::_Hashtable<unsigned long, std::pair<unsigned long const, MapBook::Order>, std::allocator<std::pair<unsigned long const, MapBook::Order> >, std::__detail::_Select1st, std::equal_to<unsigned long>, std::hash<unsigned long>, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<false, false, true> >::_M_rehash(unsigned long, unsigned long const&)
             |
             ---std::_Hashtable<unsigned long, std::pair<unsigned long const, MapBook::Order>, std::allocator<std::pair<unsigned long const, MapBook::Order> >, std::__detail::_Select1st, std::equal_to<unsigned long>, std::hash<unsigned long>, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<false, false, true> >::_M_rehash(unsigned long, unsigned long const&)
                MapBook::add_order(unsigned long, Side, double, long)
-               |          
-                --6.67%--RunResult run_once<MapBook>(std::vector<Op, std::allocator<Op> > const&)
-                          int run_bench<MapBook>(char const*, unsigned long, unsigned int, int)
-                          main
-                          0x7d4d91fc11ca
-                          __libc_start_main
-                          _start
-#
-# (Cannot load tips.txt file, please install perf!)
-#
+     5.68%     0.29%  bench    libstdc++.so.6.0.33   [.] operator new(unsigned long)
+            |
+            ---operator new(unsigned long)

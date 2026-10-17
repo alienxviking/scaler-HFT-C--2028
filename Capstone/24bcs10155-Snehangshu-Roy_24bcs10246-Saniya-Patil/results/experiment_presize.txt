@@ -1,18 +1,25 @@
-Experiment: pre-size book C's OrderTable instead of growing it
-(changed `initial_capacity = 1 << 16` to `1 << 21` in array_book.hpp, rebuilt, same machine, not committed)
+### C as submitted (table starts at 2^16 slots and doubles, ends at 2^20 = 16 MB)
+median of 5 runs:
+  total time      27.23 ms  (27.2 ns per op, untimed loop)
+  ns / add         41.9  (raw 59.8)
+  ns / cancel      27.2  (raw 45.2)
+  ns / bbo         1.52  (raw 2.65, timed in batches of 16 calls)
+            719.51 msec task-clock                       #    0.996 CPUs utilized               ( +-  3.20% )
+             25153      page-faults                      #   34.958 K/sec                       ( +-  0.00% )
 
-C normal (starts at 2^16 slots, doubles at load 0.5, ends at 2^20 = 16 MB):
-  total time      30.88 ms
-  ns / add         56.1  (raw 74.2)
-  ns / cancel      35.8  (raw 53.9)
+### C built with -DORDER_TABLE_INIT_CAP=2097152 (2^21 slots = 32 MB from the start)
+median of 5 runs:
+  total time      42.94 ms  (42.9 ns per op, untimed loop)
+  ns / add        105.1  (raw 123.1)
+  ns / cancel      91.3  (raw 109.3)
+  ns / bbo         1.54  (raw 2.66, timed in batches of 16 calls)
+           1243.11 msec task-clock                       #    0.998 CPUs utilized               ( +-  1.79% )
+            100957      page-faults                      #   81.213 K/sec                       ( +-  0.00% )
 
-C pre-sized (2^21 slots = 32 MB from the start):
-  total time      49.77 ms
-  ns / add        109.6  (raw 127.5)
-  ns / cancel      89.5  (raw 107.4)
-  perf stat:  1169.28 msec task-clock, 100955 page-faults   (normal C: ~25150 page-faults)
-
-Page faults per invocation of ./bench --impl X (perf stat -e page-faults):
-  A  --runs 1: 19610   --runs 5: 19609
-  B  --runs 1: 18789   --runs 5: 18785
-  C  --runs 1: 25150   --runs 5: 25154
+### page faults for --runs 1 vs --runs 5 (same number = they all happen in the first run)
+A --runs 1: 19610
+A --runs 5: 19613
+B --runs 1: 18790
+B --runs 5: 18790
+C --runs 1: 25150
+C --runs 5: 25153

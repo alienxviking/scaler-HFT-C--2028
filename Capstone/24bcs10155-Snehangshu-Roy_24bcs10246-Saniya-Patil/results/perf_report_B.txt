@@ -5,28 +5,30 @@
 # Total Lost Samples: 0
 #
 # Samples: 8K of event 'cycles:P'
-# Event count (approx.): 10280337525
+# Event count (approx.): 10565535609
 #
 # Overhead  Command  Shared Object         Symbol                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
 # ........  .......  ....................  ......................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................
 #
-    25.63%  bench    bench                 [.] HeapBook::cancel_order(unsigned long)
-    11.75%  bench    bench                 [.] HeapBook::add_order(unsigned long, Side, double, long)
-    10.14%  bench    [vdso]                [.] __vdso_clock_gettime
-     6.16%  bench    bench                 [.] std::__detail::_Map_base<int, std::pair<int const, HeapBook::LevelInfo>, std::allocator<std::pair<int const, HeapBook::LevelInfo> >, std::__detail::_Select1st, std::equal_to<int>, std::hash<int>, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<false, false, true>, true>::operator[](int const&)
-     5.43%  bench    bench                 [.] std::_Hashtable<int, std::pair<int const, HeapBook::LevelInfo>, std::allocator<std::pair<int const, HeapBook::LevelInfo> >, std::__detail::_Select1st, std::equal_to<int>, std::hash<int>, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<false, false, true> >::find(int const&) [clone .isra.0]
-     5.35%  bench    libstdc++.so.6.0.33   [.] std::_Rb_tree_rebalance_for_erase(std::_Rb_tree_node_base*, std::_Rb_tree_node_base&)
-     5.05%  bench    bench                 [.] std::_Rb_tree<unsigned long, std::pair<unsigned long const, HeapBook::Order>, std::_Select1st<std::pair<unsigned long const, HeapBook::Order> >, std::less<unsigned long>, std::allocator<std::pair<unsigned long const, HeapBook::Order> > >::_M_erase(std::_Rb_tree_node<std::pair<unsigned long const, HeapBook::Order> >*) [clone .isra.0]
-     3.41%  bench    libstdc++.so.6.0.33   [.] std::_Rb_tree_insert_and_rebalance(bool, std::_Rb_tree_node_base*, std::_Rb_tree_node_base*, std::_Rb_tree_node_base&)
-     2.34%  bench    libc.so.6             [.] 0x00000000001a19d2
-     2.01%  bench    libc.so.6             [.] cfree
-     1.58%  bench    bench                 [.] std::_Rb_tree_iterator<std::pair<unsigned long const, HeapBook::Order> > std::_Rb_tree<unsigned long, std::pair<unsigned long const, HeapBook::Order>, std::_Select1st<std::pair<unsigned long const, HeapBook::Order> >, std::less<unsigned long>, std::allocator<std::pair<unsigned long const, HeapBook::Order> > >::_M_emplace_hint_unique<unsigned long&, HeapBook::Order>(std::_Rb_tree_const_iterator<std::pair<unsigned long const, HeapBook::Order> >, unsigned long&, HeapBook::Order&&)
-     1.44%  bench    libc.so.6             [.] 0x00000000000a9bdb
-     1.40%  bench    libc.so.6             [.] malloc
-     1.12%  bench    bench                 [.] RunResult run_once<HeapBook>(std::vector<Op, std::allocator<Op> > const&)
-     0.66%  bench    bench                 [.] std::_Hashtable<int, std::pair<int const, HeapBook::LevelInfo>, std::allocator<std::pair<int const, HeapBook::LevelInfo> >, std::__detail::_Select1st, std::equal_to<int>, std::hash<int>, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<false, false, true> >::find(int const&) const [clone .isra.0]
-     0.51%  bench    libstdc++.so.6.0.33   [.] operator new(unsigned long)
-     0.50%  bench    libstdc++.so.6.0.33   [.] std::chrono::_V2::steady_clock::now()
+    24.59%  bench    bench                 [.] HeapBook::cancel_order(unsigned long)
+    11.42%  bench    bench                 [.] HeapBook::add_order(unsigned long, Side, double, long)
+     9.60%  bench    [vdso]                [.] __vdso_clock_gettime
+     6.64%  bench    bench                 [.] std::__detail::_Map_base<int, std::pair<int const, HeapBook::LevelInfo>, std::allocator<std::pair<int const, HeapBook::LevelInfo> >, std::__detail::_Select1st, std::equal_to<int>, std::hash<int>, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<false, false, true>, true>::operator[](int const&)
+     5.10%  bench    bench                 [.] std::_Rb_tree<unsigned long, std::pair<unsigned long const, HeapBook::Order>, std::_Select1st<std::pair<unsigned long const, HeapBook::Order> >, std::less<unsigned long>, std::allocator<std::pair<unsigned long const, HeapBook::Order> > >::_M_erase(std::_Rb_tree_node<std::pair<unsigned long const, HeapBook::Order> >*) [clone .isra.0]
+     4.58%  bench    bench                 [.] std::_Hashtable<int, std::pair<int const, HeapBook::LevelInfo>, std::allocator<std::pair<int const, HeapBook::LevelInfo> >, std::__detail::_Select1st, std::equal_to<int>, std::hash<int>, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<false, false, true> >::find(int const&) [clone .isra.0]
+     4.45%  bench    libstdc++.so.6.0.33   [.] std::_Rb_tree_rebalance_for_erase(std::_Rb_tree_node_base*, std::_Rb_tree_node_base&)
+     3.08%  bench    libstdc++.so.6.0.33   [.] std::_Rb_tree_insert_and_rebalance(bool, std::_Rb_tree_node_base*, std::_Rb_tree_node_base*, std::_Rb_tree_node_base&)
+     2.99%  bench    libc.so.6             [.] 0x00000000001a19d2
+     1.88%  bench    libc.so.6             [.] malloc
+     1.77%  bench    bench                 [.] RunResult run_once<HeapBook>(std::vector<Op, std::allocator<Op> > const&)
+     1.66%  bench    bench                 [.] std::_Hashtable<int, std::pair<int const, HeapBook::LevelInfo>, std::allocator<std::pair<int const, HeapBook::LevelInfo> >, std::__detail::_Select1st, std::equal_to<int>, std::hash<int>, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<false, false, true> >::find(int const&) const [clone .isra.0]
+     1.52%  bench    libc.so.6             [.] 0x00000000000a9bdb
+     1.45%  bench    libc.so.6             [.] cfree
+     1.10%  bench    bench                 [.] std::_Rb_tree_iterator<std::pair<unsigned long const, HeapBook::Order> > std::_Rb_tree<unsigned long, std::pair<unsigned long const, HeapBook::Order>, std::_Select1st<std::pair<unsigned long const, HeapBook::Order> >, std::less<unsigned long>, std::allocator<std::pair<unsigned long const, HeapBook::Order> > >::_M_emplace_hint_unique<unsigned long&, HeapBook::Order>(std::_Rb_tree_const_iterator<std::pair<unsigned long const, HeapBook::Order> >, unsigned long&, HeapBook::Order&&)
+     0.78%  bench    bench                 [.] unsigned long play<HeapBook>(HeapBook&, std::vector<Op, std::allocator<Op> > const&)
+     0.61%  bench    bench                 [.] void std::vector<Level, std::allocator<Level> >::_M_realloc_insert<Level>(__gnu_cxx::__normal_iterator<Level*, std::vector<Level, std::allocator<Level> > >, Level&&)
+     0.55%  bench    bench                 [.] void std::__adjust_heap<__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >, long, int, __gnu_cxx::__ops::_Iter_comp_iter<std::less<int> > >(__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >, long, long, int, __gnu_cxx::__ops::_Iter_comp_iter<std::less<int> >) [clone .isra.0]
+     0.52%  bench    bench                 [.] make_workload(unsigned long, unsigned int, WorkloadOptions const&)
 #
 # (Cannot load tips.txt file, please install perf!)
 #
@@ -38,147 +40,147 @@
 # Total Lost Samples: 0
 #
 # Samples: 8K of event 'cycles:P'
-# Event count (approx.): 10280337525
+# Event count (approx.): 10565535609
 #
 # Children      Self  Command  Shared Object         Symbol                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
 # ........  ........  .......  ....................  ......................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................
 #
-    99.74%     0.00%  bench    bench                 [.] _start
+    99.77%     0.00%  bench    bench                 [.] _start
             |
             ---_start
-    99.74%     0.00%  bench    libc.so.6             [.] __libc_start_main
+    99.77%     0.00%  bench    libc.so.6             [.] __libc_start_main
             |
             ---__libc_start_main
                _start
-    99.74%     0.00%  bench    libc.so.6             [.] 0x000073a7eaa4f1ca
+    99.76%     0.00%  bench    libc.so.6             [.] 0x000078a0bef201ca
             |
-            ---0x73a7eaa4f1ca
+            ---0x78a0bef201ca
                __libc_start_main
                _start
-    99.74%     0.00%  bench    bench                 [.] main
+    99.76%     0.00%  bench    bench                 [.] main
             |
             ---main
-               0x73a7eaa4f1ca
+               0x78a0bef201ca
                __libc_start_main
                _start
-    99.72%     0.14%  bench    bench                 [.] int run_bench<HeapBook>(char const*, unsigned long, unsigned int, int)
+    99.76%     0.09%  bench    bench                 [.] int run_bench<HeapBook>(char const*, unsigned long, unsigned int, int)
             |
             ---int run_bench<HeapBook>(char const*, unsigned long, unsigned int, int)
                main
-               0x73a7eaa4f1ca
+               0x78a0bef201ca
                __libc_start_main
                _start
-    89.51%     1.12%  bench    bench                 [.] RunResult run_once<HeapBook>(std::vector<Op, std::allocator<Op> > const&)
+    87.95%     1.77%  bench    bench                 [.] RunResult run_once<HeapBook>(std::vector<Op, std::allocator<Op> > const&)
             |
             ---RunResult run_once<HeapBook>(std::vector<Op, std::allocator<Op> > const&)
                int run_bench<HeapBook>(char const*, unsigned long, unsigned int, int)
                main
-               0x73a7eaa4f1ca
+               0x78a0bef201ca
                __libc_start_main
                _start
-    26.88%    11.75%  bench    bench                 [.] HeapBook::add_order(unsigned long, Side, double, long)
+    38.20%     0.78%  bench    bench                 [.] unsigned long play<HeapBook>(HeapBook&, std::vector<Op, std::allocator<Op> > const&)
+            |
+            ---unsigned long play<HeapBook>(HeapBook&, std::vector<Op, std::allocator<Op> > const&)
+               |          
+               |--32.25%--RunResult run_once<HeapBook>(std::vector<Op, std::allocator<Op> > const&)
+               |          int run_bench<HeapBook>(char const*, unsigned long, unsigned int, int)
+               |          main
+               |          0x78a0bef201ca
+               |          __libc_start_main
+               |          _start
+               |          
+                --5.95%--int run_bench<HeapBook>(char const*, unsigned long, unsigned int, int)
+                          main
+                          0x78a0bef201ca
+                          __libc_start_main
+                          _start
+    26.44%    11.42%  bench    bench                 [.] HeapBook::add_order(unsigned long, Side, double, long)
             |
             ---HeapBook::add_order(unsigned long, Side, double, long)
                |          
-                --24.57%--RunResult run_once<HeapBook>(std::vector<Op, std::allocator<Op> > const&)
-                          int run_bench<HeapBook>(char const*, unsigned long, unsigned int, int)
-                          main
-                          0x73a7eaa4f1ca
-                          __libc_start_main
-                          _start
-    26.31%    25.63%  bench    bench                 [.] HeapBook::cancel_order(unsigned long)
-            |
-            ---HeapBook::cancel_order(unsigned long)
-               |          
-                --23.94%--RunResult run_once<HeapBook>(std::vector<Op, std::allocator<Op> > const&)
-                          int run_bench<HeapBook>(char const*, unsigned long, unsigned int, int)
-                          main
-                          0x73a7eaa4f1ca
-                          __libc_start_main
-                          _start
-    13.24%     0.05%  bench    bench                 [.] std::default_delete<HeapBook>::operator()(HeapBook*) const [clone .part.0]
-            |
-            ---std::default_delete<HeapBook>::operator()(HeapBook*) const [clone .part.0]
+               |--13.95%--unsigned long play<HeapBook>(HeapBook&, std::vector<Op, std::allocator<Op> > const&)
+               |          |          
+               |           --11.78%--RunResult run_once<HeapBook>(std::vector<Op, std::allocator<Op> > const&)
+               |                     int run_bench<HeapBook>(char const*, unsigned long, unsigned int, int)
+               |                     main
+               |                     0x78a0bef201ca
+               |                     __libc_start_main
+               |                     _start
                |          
                 --12.48%--RunResult run_once<HeapBook>(std::vector<Op, std::allocator<Op> > const&)
                           int run_bench<HeapBook>(char const*, unsigned long, unsigned int, int)
                           main
-                          0x73a7eaa4f1ca
+                          0x78a0bef201ca
                           __libc_start_main
                           _start
-    10.66%     0.50%  bench    libstdc++.so.6.0.33   [.] std::chrono::_V2::steady_clock::now()
+    25.25%    24.59%  bench    bench                 [.] HeapBook::cancel_order(unsigned long)
+            |
+            ---HeapBook::cancel_order(unsigned long)
+               |          
+               |--12.95%--unsigned long play<HeapBook>(HeapBook&, std::vector<Op, std::allocator<Op> > const&)
+               |          |          
+               |           --10.87%--RunResult run_once<HeapBook>(std::vector<Op, std::allocator<Op> > const&)
+               |                     int run_bench<HeapBook>(char const*, unsigned long, unsigned int, int)
+               |                     main
+               |                     0x78a0bef201ca
+               |                     __libc_start_main
+               |                     _start
+               |          
+                --12.31%--RunResult run_once<HeapBook>(std::vector<Op, std::allocator<Op> > const&)
+                          int run_bench<HeapBook>(char const*, unsigned long, unsigned int, int)
+                          main
+                          0x78a0bef201ca
+                          __libc_start_main
+                          _start
+    13.10%     0.06%  bench    bench                 [.] std::default_delete<HeapBook>::operator()(HeapBook*) const [clone .part.0]
+            |
+            ---std::default_delete<HeapBook>::operator()(HeapBook*) const [clone .part.0]
+               |          
+                --11.94%--RunResult run_once<HeapBook>(std::vector<Op, std::allocator<Op> > const&)
+                          int run_bench<HeapBook>(char const*, unsigned long, unsigned int, int)
+                          main
+                          0x78a0bef201ca
+                          __libc_start_main
+                          _start
+    10.11%     0.49%  bench    libstdc++.so.6.0.33   [.] std::chrono::_V2::steady_clock::now()
             |
             ---std::chrono::_V2::steady_clock::now()
                |          
-                --9.77%--RunResult run_once<HeapBook>(std::vector<Op, std::allocator<Op> > const&)
+                --9.16%--RunResult run_once<HeapBook>(std::vector<Op, std::allocator<Op> > const&)
                           int run_bench<HeapBook>(char const*, unsigned long, unsigned int, int)
                           main
-                          0x73a7eaa4f1ca
+                          0x78a0bef201ca
                           __libc_start_main
                           _start
-    10.26%     0.16%  bench    libc.so.6             [.] clock_gettime
+     9.77%     0.20%  bench    libc.so.6             [.] clock_gettime
             |
             ---clock_gettime
                |          
-                --10.13%--std::chrono::_V2::steady_clock::now()
+                --9.57%--std::chrono::_V2::steady_clock::now()
                           |          
-                           --9.26%--RunResult run_once<HeapBook>(std::vector<Op, std::allocator<Op> > const&)
+                           --8.73%--RunResult run_once<HeapBook>(std::vector<Op, std::allocator<Op> > const&)
                                      int run_bench<HeapBook>(char const*, unsigned long, unsigned int, int)
                                      main
-                                     0x73a7eaa4f1ca
+                                     0x78a0bef201ca
                                      __libc_start_main
                                      _start
-    10.14%    10.14%  bench    [vdso]                [.] __vdso_clock_gettime
+     9.62%     9.60%  bench    [vdso]                [.] __vdso_clock_gettime
             |
             ---__vdso_clock_gettime
                |          
-                --10.10%--clock_gettime
+                --9.57%--clock_gettime
                           std::chrono::_V2::steady_clock::now()
                           |          
-                           --9.24%--RunResult run_once<HeapBook>(std::vector<Op, std::allocator<Op> > const&)
+                           --8.73%--RunResult run_once<HeapBook>(std::vector<Op, std::allocator<Op> > const&)
                                      int run_bench<HeapBook>(char const*, unsigned long, unsigned int, int)
                                      main
-                                     0x73a7eaa4f1ca
+                                     0x78a0bef201ca
                                      __libc_start_main
                                      _start
-     8.65%     5.05%  bench    bench                 [.] std::_Rb_tree<unsigned long, std::pair<unsigned long const, HeapBook::Order>, std::_Select1st<std::pair<unsigned long const, HeapBook::Order> >, std::less<unsigned long>, std::allocator<std::pair<unsigned long const, HeapBook::Order> > >::_M_erase(std::_Rb_tree_node<std::pair<unsigned long const, HeapBook::Order> >*) [clone .isra.0]
+     8.39%     1.45%  bench    libc.so.6             [.] cfree
+            |
+            ---cfree
+     8.20%     5.10%  bench    bench                 [.] std::_Rb_tree<unsigned long, std::pair<unsigned long const, HeapBook::Order>, std::_Select1st<std::pair<unsigned long const, HeapBook::Order> >, std::less<unsigned long>, std::allocator<std::pair<unsigned long const, HeapBook::Order> > >::_M_erase(std::_Rb_tree_node<std::pair<unsigned long const, HeapBook::Order> >*) [clone .isra.0]
             |
             ---std::_Rb_tree<unsigned long, std::pair<unsigned long const, HeapBook::Order>, std::_Select1st<std::pair<unsigned long const, HeapBook::Order> >, std::less<unsigned long>, std::allocator<std::pair<unsigned long const, HeapBook::Order> > >::_M_erase(std::_Rb_tree_node<std::pair<unsigned long const, HeapBook::Order> >*) [clone .isra.0]
                |          
-                --6.15%--std::default_delete<HeapBook>::operator()(HeapBook*) const [clone .part.0]
-                          |          
-                           --5.55%--RunResult run_once<HeapBook>(std::vector<Op, std::allocator<Op> > const&)
-                                     int run_bench<HeapBook>(char const*, unsigned long, unsigned int, int)
-                                     main
-                                     0x73a7eaa4f1ca
-                                     __libc_start_main
-                                     _start
-     8.53%     2.01%  bench    libc.so.6             [.] cfree
-            |
-            ---cfree
-     6.26%     6.16%  bench    bench                 [.] std::__detail::_Map_base<int, std::pair<int const, HeapBook::LevelInfo>, std::allocator<std::pair<int const, HeapBook::LevelInfo> >, std::__detail::_Select1st, std::equal_to<int>, std::hash<int>, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<false, false, true>, true>::operator[](int const&)
-            |
-            ---std::__detail::_Map_base<int, std::pair<int const, HeapBook::LevelInfo>, std::allocator<std::pair<int const, HeapBook::LevelInfo> >, std::__detail::_Select1st, std::equal_to<int>, std::hash<int>, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<false, false, true>, true>::operator[](int const&)
-               |          
-                --6.17%--HeapBook::add_order(unsigned long, Side, double, long)
-                          |          
-                           --5.58%--RunResult run_once<HeapBook>(std::vector<Op, std::allocator<Op> > const&)
-                                     int run_bench<HeapBook>(char const*, unsigned long, unsigned int, int)
-                                     main
-                                     0x73a7eaa4f1ca
-                                     __libc_start_main
-                                     _start
-     5.50%     0.51%  bench    libstdc++.so.6.0.33   [.] operator new(unsigned long)
-            |
-            ---operator new(unsigned long)
-     5.43%     5.43%  bench    bench                 [.] std::_Hashtable<int, std::pair<int const, HeapBook::LevelInfo>, std::allocator<std::pair<int const, HeapBook::LevelInfo> >, std::__detail::_Select1st, std::equal_to<int>, std::hash<int>, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<false, false, true> >::find(int const&) [clone .isra.0]
-            |
-            ---std::_Hashtable<int, std::pair<int const, HeapBook::LevelInfo>, std::allocator<std::pair<int const, HeapBook::LevelInfo> >, std::__detail::_Select1st, std::equal_to<int>, std::hash<int>, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<false, false, true> >::find(int const&) [clone .isra.0]
-     5.37%     5.35%  bench    libstdc++.so.6.0.33   [.] std::_Rb_tree_rebalance_for_erase(std::_Rb_tree_node_base*, std::_Rb_tree_node_base&)
-            |
-            ---std::_Rb_tree_rebalance_for_erase(std::_Rb_tree_node_base*, std::_Rb_tree_node_base&)
-     5.30%     1.58%  bench    bench                 [.] std::_Rb_tree_iterator<std::pair<unsigned long const, HeapBook::Order> > std::_Rb_tree<unsigned long, std::pair<unsigned long const, HeapBook::Order>, std::_Select1st<std::pair<unsigned long const, HeapBook::Order> >, std::less<unsigned long>, std::allocator<std::pair<unsigned long const, HeapBook::Order> > >::_M_emplace_hint_unique<unsigned long&, HeapBook::Order>(std::_Rb_tree_const_iterator<std::pair<unsigned long const, HeapBook::Order> >, unsigned long&, HeapBook::Order&&)
-            |
-            ---std::_Rb_tree_iterator<std::pair<unsigned long const, HeapBook::Order> > std::_Rb_tree<unsigned long, std::pair<unsigned long const, HeapBook::Order>, std::_Select1st<std::pair<unsigned long const, HeapBook::Order> >, std::less<unsigned long>, std::allocator<std::pair<unsigned long const, HeapBook::Order> > >::_M_emplace_hint_unique<unsigned long&, HeapBook::Order>(std::_Rb_tree_const_iterator<std::pair<unsigned long const, HeapBook::Order> >, unsigned long&, HeapBook::Order&&)
-               |          
-                --5.05%--HeapBook::add_order(unsigned long, Side, double, long)

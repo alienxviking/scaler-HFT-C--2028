@@ -16,22 +16,30 @@ same workload. The full results table and the analysis are in [REPORT.md](REPORT
 | `map_book.hpp` | Implementation A: `std::map` levels + `std::unordered_map` orders |
 | `heap_book.hpp` | Implementation B: `std::priority_queue` with lazy deletion + `std::map` orders |
 | `array_book.hpp` | Implementation C (our design): flat array of levels + bitmap + own open addressing hash table |
-| `bench.cpp` | workload generator, `--verify` correctness test, benchmark |
+| `workload.hpp` | random op generator (fixed seed) and the loop that plays it on a book + checksum |
+| `verify.hpp` | `--verify`: edge cases, brute force reference book, random workloads on A/B/C side by side |
+| `bench.cpp` | `main`, the benchmark (`--impl A/B/C`) and timing |
+| `Makefile` | `make` builds `bench`, `make verify` runs the correctness test |
 | `run_perf.sh` | builds, runs verify + bench + `perf stat` + `perf record` for A/B/C, writes `results/` |
 | `per_run_counters.sh` | perf counters for one run of the book only (see REPORT) |
 | `perf.Dockerfile` | the Ubuntu image we used for g++ and perf |
 | `results/` | all the raw output we quote in the report |
+| `tests/` | extra checks: build matrix with sanitizers, and a mutation test for `--verify` |
 
 ## Build
 
-Needs g++ with C++17 (we used g++ 13.3).
+Needs g++ (or clang++) with C++17. We used g++ 13.3.
 
 ```
 g++ -std=c++17 -O2 -Wall -Wextra -g -fno-omit-frame-pointer -o bench bench.cpp
 ```
 
 or just `make`. `-g -fno-omit-frame-pointer` are only there so `perf record -g`
-gives proper call stacks, the code is the same `-O2` build.
+gives proper call stacks, the code is the same `-O2` build. Plain
+`g++ -std=c++17 -O2 -o bench bench.cpp` works too.
+
+Only the standard library is used. C also uses `__builtin_clzll` / `__builtin_ctzll`
+(GCC/Clang compiler builtins, not a library) to find set bits in its bitmap.
 
 ## Correctness test
 
@@ -39,41 +47,57 @@ gives proper call stacks, the code is the same `-O2` build.
 ./bench --verify
 ```
 
-This runs three things on each implementation:
-1. fixed edge cases: empty book, cancel of unknown id, cancel twice, bad prices
-   (outside the band, wrong side of mid, not on the 0.01 grid), qty <= 0,
-   duplicate id, fewer levels than requested depth, best level emptying, etc.
-2. a random 200k op workload (70/20/10 mix, 5% of cancels go to unknown or
-   already cancelled ids)
-3. a "thin book" 200k op workload where adds ~= cancels, so levels keep
-   emptying and the best price moves around a lot
-
-For 2 and 3 every single op is checked against a brute force reference book
-(plain vector of qty per tick and a full scan for every query): return value
-of add/cancel, the BBO, top 10 bids and top 10 asks, and every 1000 ops the full
-depth of both sides. At the end it runs the real 1M op benchmark workload through
-A, B and C and checks the checksums are equal.
+What it does (code in `verify.hpp`):
+1. fixed edge cases on each book: empty book, cancel of an unknown id, cancel twice,
+   bad prices (outside the band, wrong side of the mid, not on the 0.01 grid, NaN,
+   inf), qty <= 0 or too big, duplicate id, id 0 and the max id, fewer levels than the
+   requested depth, depth 0 / negative, a level in the middle emptying, a level coming
+   back after it emptied, etc.
+2. C's hand written hash table on its own against `std::unordered_map`
+   (9 x 200k random inserts/erases, starting from 16 slots so it resizes a lot)
+3. four random workloads of 200k ops each: the normal 70/20/10 mix, a "thin" book
+   where adds ~= cancels so levels keep emptying, random 64 bit ids instead of
+   1, 2, 3, ..., and random ids with all prices in 20 ticks per side.
+   5% of cancels go to unknown or already cancelled ids.
+   Each workload is played on A, B, C and a brute force reference book (plain array
+   of qty per tick, full scan for every query) side by side, and after **every op**
+   all three are compared with the reference: the add/cancel return value, the BBO,
+   top 10 bids and asks, and the bids and asks at a second depth that changes
+   every op (-2 to 22, and the whole book every 1000 ops).
+4. the real 1M op benchmark workload on A, B and C. The checksums have to match.
 
 Our output (`results/verify.txt`):
 
 ```
 Running correctness test...
 
-1. edge cases (empty book, unknown/double cancel, bad prices, short depth, ...)
-2. random workload: 200000 ops (add 140191, cancel 39805, bbo 20004), seed 7
-3. thin book workload: 200000 ops (add 90067, cancel 89931, bbo 20002), seed 8
-in 2 and 3 every op is compared against a brute force reference book
+1. edge cases: empty book, unknown / double cancel, bad prices and qty, id 0 and max,
+   short depth, levels emptying and coming back
+2. C's OrderTable vs std::unordered_map, 9 x 200000 random inserts/erases: ok
+3. random workloads, A, B, C and a brute force book side by side, compared after every op
+   (5% of cancels go to unknown or already cancelled ids)
+   a) normal 70/20/10 mix: 200000 ops (add 140191, cancel 39805, bbo 20004), seed 7
+   b) thin book, 45% add / 45% cancel: 200000 ops (add 90067, cancel 89931, bbo 20002), seed 8
+   c) random 64 bit ids: 200000 ops (add 140170, cancel 39925, bbo 19905), seed 9
+   d) random ids, thin book, only 20 ticks per side: 200000 ops (add 89674, cancel 90430, bbo 19896), seed 10
+4. benchmark workload (1M ops, seed 42) checksum: A=13740035995088966065 B=13740035995088966065 C=13740035995088966065 (match)
 
 Implementation A: PASS
 Implementation B: PASS
 Implementation C: PASS
 
-benchmark workload checksum: A=13740035995088966065 B=13740035995088966065 C=13740035995088966065 (match)
-
 All implementations produce identical results.
 ```
 
-We also ran `--verify` with `-fsanitize=address,undefined`, no errors.
+Extra testing (scripts in `tests/`):
+- `tests/check_builds.sh` builds with g++ (`-std=c++17/20/23`, `-O0/-O2/-O3`), clang++,
+  AddressSanitizer + UBSan (g++ and clang++), `_GLIBCXX_ASSERTIONS` and `_GLIBCXX_DEBUG`
+  (checked STL containers), all with `-Wall -Wextra -Wpedantic -Wshadow`, and runs `--verify`
+  with each build. No warnings, no errors.
+- `tests/mutation_test.sh` checks that the test itself works: it puts 14 known bugs into a
+  copy of the code (one at a time, listed in `tests/mutants.txt`, e.g. not updating the best bid,
+  skipping the backward shift in C's hash table, not cleaning B's heap top, keeping empty levels
+  in A, accepting 100.00 as a bid) and runs `--verify`. All 14 get caught.
 
 ## Benchmark
 
@@ -94,9 +118,14 @@ implementations get the exact same op list.
 
 Each run does two passes on a fresh book:
 - pass 1 with no timers in the loop gives the **total time** and the checksum
-- pass 2 wraps every add / cancel / get_bbo in `steady_clock::now()` and gives the
+- pass 2 wraps every add / cancel in `steady_clock::now()` and gives the
   **average ns per op type**. The cost of one `now()` call (~18 ns here) is
   measured at startup and subtracted, the raw number is printed too.
+  One `get_bbo` is faster than one `now()` call, so for every BBO op we time 16
+  `get_bbo` calls back to back and divide by 16. There's a compiler barrier
+  (`std::atomic_signal_fence`) between the calls so the compiler can't merge them
+  into one. We checked the assembly: all 16 calls are there and every one of them
+  re-reads the book and does the tick to price conversion.
 
 We run 5 times and print the median. At the end the final BBO and a checksum
 (mixed from every cancel result, BBO and depth snapshot) are printed so the compiler
@@ -104,10 +133,10 @@ can't throw anything away. Example (`results/bench_C.txt`):
 
 ```
 median of 5 runs:
-  total time      30.88 ms  (30.9 ns per op, untimed loop)
-  ns / add         43.9  (raw 61.8)
-  ns / cancel      26.8  (raw 44.7)
-  ns / bbo          0.1  (raw 17.9)
+  total time      30.71 ms  (30.7 ns per op, untimed loop)
+  ns / add         47.5  (raw 65.4)
+  ns / cancel      29.5  (raw 47.3)
+  ns / bbo         1.52  (raw 2.63, timed in batches of 16 calls)
 
 Final BBO:
 Bid: 99.99 x 1981
@@ -138,7 +167,9 @@ perf record -g ./bench --impl X
 perf report
 ```
 
-and saves everything in `results/`.
+and saves everything in `results/`. It also runs the same perf stat with `--no-timers`
+(`perf_stat_X_no_timers.txt`), `per_run_counters.sh` (counters for one run of the book
+alone, see REPORT section 3) and the pre-sized hash table experiment (`experiment_presize.txt`).
 
 ## Interface changes
 
@@ -149,14 +180,17 @@ these changes:
   unchanged if the price is not on the 0.01 grid, outside the band for that side
   (bids 50.00-99.99, asks 100.01-150.00), qty is not in 1..2^31-1, or the id is
   already live.
-- Internally every book uses integer ticks (`price * 100`, `llround`), so there's
-  no floating point comparison anywhere in the books. Conversion happens once at
-  the API boundary.
+- Internally every book uses integer ticks (`price * 100`, `llround`), so the data
+  structures never compare doubles. The conversion and the grid check happen once
+  in `add_order` (`price_to_tick` in `common.hpp`), and prices are converted back
+  only when returning a `BBO` / `Level`.
 - `BBO` fields have default values, so an empty side is `has_x = false, price 0, qty 0`.
 - Each book also has `size_t order_count() const` (only used to print the final state).
-- There is no virtual base class. `bench.cpp` uses templates (`run_once<Book>`),
-  so all three are used through the same 5 functions without a virtual call
-  per op.
+- The three classes are called `MapBook` (A), `HeapBook` (B) and `ArrayBook` (C)
+  instead of `OrderBook`. All three have the same 5 public functions with the same
+  signatures. There's no virtual base class: the benchmark and verify code are
+  templates (`play<Book>`, `run_once<Book>`, `edge_cases<Book>`), so all three go
+  through exactly the same code without a virtual call per op.
 
 ## Data structure choices (short version)
 
@@ -165,14 +199,14 @@ these changes:
 | orders | `std::unordered_map<id, Order>` | `std::map<id, Order>` | own open addressing table, 16 byte slots, linear probing |
 | price levels | `std::map<tick, qty>` per side | `std::unordered_map<tick, {qty, in_heap}>` per side | `long qty[10001]` indexed by tick - 5000 |
 | best bid/ask | `begin()` of the map | top of `std::priority_queue`, stale tops popped on cancel | cached index, bitmap scan when the best level empties |
-| cancel lookup | hash lookup | tree lookup O(log n) | hash lookup, no pointers |
+| cancel lookup | chained hashing: bucket -> pointer to a separately allocated node | tree search, ~19 nodes deep for 500k orders | open addressing: probe 16 byte slots in one array, the order data is inside the slot |
 
 | op | A | B | C |
 |---|---|---|---|
 | add_order | O(log P) | O(log N) | O(1) amortized |
 | cancel_order | O(log P) | O(log N) + amortized O(log P) | O(1) expected, O(P/64) worst |
 | get_bbo | O(1) | O(1) | O(1) |
-| get_bids / get_asks | O(d) | O(P + d log P) | O(d + P/64) worst |
+| get_bids / get_asks | O(d) | O(P + (d + s) log P), worst O(P log P) | O(d + P/64) worst |
 
-N = live orders, P = price levels per side (max 5000), d = depth. Details for each
-in [REPORT.md](REPORT.md#1-the-three-implementations).
+N = live orders, P = price levels per side (max 5000), d = depth, s = stale ticks
+skipped. Details for each in [REPORT.md](REPORT.md#1-the-three-implementations).
